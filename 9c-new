@@ -1,0 +1,69 @@
+import pandas as pd
+import streamlit as st
+
+st.set_page_config(
+    page_title="9/C Çalışma Ligi", page_icon="🚜", layout="centered"
+)
+
+# TV Girl Teması (Lacivert & Parlak Pembe CSS)
+st.markdown(
+    """
+    <style>
+    .main { background-color: #0b1d3a; color: #ffffff; }
+    .stButton>button { background-color: #ff1493; color: white; border-radius: 10px; font-weight: bold; border: none; }
+    .stButton>button:hover { background-color: #ff69b4; color: white; }
+    h1, h2, h3 { color: #ff1493 !important; }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
+st.title("🚜 9/C'NİN TRAKTÖR TEKERLEKLERİ")
+st.subheader("Birlikte Başarıya! 💖")
+
+# Liste tertemiz, başlangıçta boş!
+if "veriler" not in st.session_state:
+  st.session_state.veriler = []
+
+
+def lakap_ver(sira):
+  if sira == 1:
+    return "👑 Somer Şef"
+  elif sira == 2:
+    return "🥈 Sinan Engin"
+  elif sira == 3:
+    return "🥉 Selim Bey"
+  else:
+    return "📚 Öğrenci"
+
+
+st.write("---")
+st.write("### 📝 Günlük Çalışma Saati Gir")
+ogrenci_adi = st.text_input("Adın Soyadın:")
+calisma_saati = st.number_input(
+    "Bugün Kaç Saat Çalıştın?", min_value=0.0, max_value=24.0, step=0.5
+)
+
+if st.button("Kaydet ve Sıralamaya Gir"):
+  if ogrenci_adi.strip() != "":
+    st.session_state.veriler.append(
+        {"İsim": ogrenci_adi, "Saat": calisma_saati}
+    )
+    st.success(f"Tebrikler {ogrenci_adi}! {calisma_saati} saat eklendi.")
+  else:
+    st.warning("Lütfen adını yaz!")
+
+if len(st.session_state.veriler) > 0:
+  df = pd.DataFrame(st.session_state.veriler)
+  df = df.groupby("İsim", as_index=False)["Saat"].sum()
+  df = df.sort_values(by="Saat", ascending=False).reset_index(drop=True)
+  df.index = df.index + 1
+  df["Lakap"] = [lakap_ver(i) for i in df.index]
+
+  st.write("---")
+  st.write("### 🏆 Live Liderlik Tablosu")
+  st.dataframe(df[["İsim", "Saat", "Lakap"]], use_container_width=True)
+else:
+  st.write("---")
+  st.write("### 🏆 Live Liderlik Tablosu")
+  st.info("Henüz veri girilmedi. İlk çalışmayı sen gir ve liderlik koltuğuna otur!")
